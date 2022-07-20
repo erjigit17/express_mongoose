@@ -1,0 +1,68 @@
+POST {{host}}:{{port}}/todos
+Content-Type: application/json
+
+{
+  "message": "some task",
+  "completed": false
+}
+
+> {%
+    client.test('01. ### POST /todos', function() {
+        client.assert(response.body.hasOwnProperty('_id'), 'GUID was not found.')
+        client.global.set('guidAfterPost', response.body['_id'])
+    })
+%}
+
+###
+PATCH {{host}}:{{port}}/todos/{{guidAfterPost}}
+Content-Type: application/json
+
+{
+  "completed": true
+}
+
+> {%
+    client.test('02. ### PATCH /todos/:id', function() {
+        client.assert(response.status === 200, 'Response status is not 200')
+    })
+%}
+
+###
+GET {{host}}:{{port}}/todos
+Content-Type: application/json
+
+> {%
+    client.test('03. ### GET /todos', function() {
+        client.assert(response.status === 200, 'Response status is not 200')
+    })
+%}
+
+###
+GET {{host}}:{{port}}/todos/{{guidAfterPost}}
+Content-Type: application/json
+
+> {%
+    client.test('04. ### GET /todos/:id', function() {
+        client.assert(response.status === 200, 'Response status is not 200')
+    })
+%}
+
+###
+DELETE {{host}}:{{port}}/todos/{{guidAfterPost}}
+Content-Type: application/json
+
+> {%
+    client.test('05. ### PATCH /todos/:id', function() {
+        client.assert(response.status === 200, 'Response status is not 200')
+    })
+%}
+
+###
+GET {{host}}:{{port}}/todos/{{guidAfterPost}}
+Content-Type: application/json
+
+> {%
+    client.test('04. ### GET /todos/:id', function() {
+        client.assert(response.body['deletedAt'] !== null, 'deletedAt is null')
+    })
+%}
